@@ -1,12 +1,16 @@
 # data_objects_import
 A repository introducing R data frames and data import
 
-Links for reference:
+## Links for reference:
 
 [Tibbles in R for Data Science](http://r4ds.had.co.nz/tibbles.html)  
 [Tidyverse package](https://www.tidyverse.org)
 
-Specific packages:
+## Specific packages:
 
 [readr for data import](http://readr.tidyverse.org)  
 [dplyr for wrangling](http://dplyr.tidyverse.org)
+
+## Data
+
+There are several examples of data for import in the data/ directory
