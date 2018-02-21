@@ -1,0 +1,162 @@
+---
+title: "Data Frames and Data Import"
+output: html_notebook
+---
+
+The data frame is a culmination of all the base structures we have been working on.  A data frame is a collection of vectors presented in a single file that can be indexed and operated on in the same manner as vectors.  Data frames can also be manipulated using various new tools that will be introduced along the way.
+
+Unlike an Excel spreadsheet, an R data frame imposes the same basic properties as a vector on each column of data (because they are vectors!).  That means each column can only be a single data type.  Also, all columns in a data frame must be of **equal length**, though you can add N/A's to make up the difference for missing observations.
+
+The code below will illustrate the base R mechanisms for extracting columns (vectors) of data and then further subsetting the data from a data frame.  In the process, we will learn to use the more modern, RStudio implementation of the data frame, called a `tibble`.
+
+We will also use new packages supporting tibbles like `readr`, which implement existing import functions like `read.csv()` in a more modern (and usually faster) fashion using `read_csv()`.  You can read more about this in the help Vignettes (search `readr` in the help tab).
+
+We will be using several R packages (libraries) from RStudio called tidyverse.  The basic syntax for loading a library is as follows.  **ALL** library calls should be placed at the top of you code (script, notebook, presentation, whatever you are using).  Any libraries you add in later analysis should also be added to the main library call.
+
+```{r load-libraries}
+# load the necessary libraries, one per line
+library(dplyr)
+library(readr)
+library(tibble)
+
+# alternately we can load a core subset of libraries, including the above.  
+# Generally, we only call either the group above, or the one below, not both, as it is redundant
+# library(tidyverse)
+
+# ------------------
+
+# Excel files require a separate library.  There are several to choose from, 
+# but the RStudio library is clean and fast to use
+library(readxl)
+```
+
+
+Let's start building a data frame using a set of vectors.
+
+```{r vectors}
+# a vector of integers
+v1 <- c(1,2,3,4)
+
+# a vector of strings
+v2 <- c("a", "b", "c", "d")
+
+# a vector of booleans
+v3 <- c(TRUE, FALSE, FALSE, TRUE)
+
+# a vector of floating points
+v4 <- c(1.1, 1.2, 3.3)
+
+```
+
+Now, we will use the base R data frame constructor.  As mentioned earlier, a data frame requires all vectors to be equal length (unlike a spreadsheet).
+
+```{r data-frame}
+# create a data frame using base R.  The function call is simply a comma-separated list of vectors to combine.
+# What happens when the next line of code is run?
+df1 <- data.frame( v1, v2, v3, v4)
+
+# try again with just the first three
+df1 <- data.frame(v1, v2, v3)
+
+# print to screen
+df1
+
+# now add a no-data value to the fourth vector to make it equal length
+# NA (all caps, no quotes) is a reserved word
+v4 <- c(v4, NA)
+
+# try again
+df1 <- data.frame( v1, v2, v3, v4)
+df1
+```
+
+What is the data type of v2?  What were you expecting that to be?
+
+
+Let's look at a modern Tibble
+
+```{r tibble}
+# now create a tibble using the tibble package (library)
+df2 <- tibble(v1, v2, v3, v4)
+# print to screen
+df2
+```
+
+What type of variable is v2 now?  The `tibble` data frame no longer assumes strings are factors.  This was originally done to make the data frame more memory-efficient, which is no longer necessary.
+
+A more complex [and ultimately more meaningful] variable assignment is made using a 'new_column_name' = variable syntax. You can change the names of columns; it is arbitrary, but make the new assigment names meaningful to you.
+
+As a side note, writing clean, legible code is important.  R code interpreters, like most modern code interpreters, ignore whitespace and line breaks, making it possible to write code one line at a time.  Interpreters will look for **closures** ending statements.  Closures include `() and {}`.
+
+```{r tibble-construction}
+# a new data frame with meaningful column names.  
+# Note, we can write each variable assignment on a separate line for clarity
+df3 <- tibble(numbers = v1, # assign the integer to a named column
+              abc = v2, # assign the strings
+              logics = v3, # assign the logical
+              # we can also assign new vectors an explicitly assign a variable type
+              facts = as.factor( 
+                c("a", "b", "b", "a") 
+                )
+              )
+df3
+
+# extract the vector
+df3[[2]]
+df3$abc
+
+# extract the column
+df3[2]
+```
+
+
+## Data import
+
+```{r read-csv}
+
+NEON_D02_SCBI_DP1_10058_001_div_1m2Data <- read_csv("data/scbi/inventory/NEON.D02.SCBI.DP1.10058.001.div_1m2Data.csv", 
+                                                    col_types = cols(
+                                                      date = col_date(format = "%Y-%m-%d")
+                                                      )
+                                                  )
+
+NEON_D02_SCBI_DP1_10058_001_div_1m2Data
+```
+
+```{r read-txt}
+# library(readr)
+scbi_grove_species_summaries_neon <- read_table("data/scbi_grove_species_summaries_neon.txt", 
+    col_names = c("wavelength", "mean_sp1", "mean_sp2", "mean_sp3", "mean_sp4", "mean_sp5", "mean_sp6"),
+    skip = 8)
+# View(scbi_grove_species_summaries_neon)
+scbi_grove_species_summaries_neon
+```
+
+```{r read_xl}
+library(readxl)
+Filodata_processing <- read_excel("data/filo_data/Filodata_processing.xlsx", 
+    sheet = "Sheet1")
+# View(Filodata_processing)
+Filodata_processing
+
+```
+
+```{r filter-data}
+
+NEON_D02_SCBI_DP1_10058_001_div_1m2Data %>%
+# filter(.data = NEON_D02_SCBI_DP1_10058_001_div_1m2Data,
+  filter(taxonRank == "genus" & percentCover <= 0.5) %>% 
+  select(one_of(c("scientificName", "decimalLatitude", "decimalLongitude", "taxonRank"))) %>% 
+  write_csv("results/filter_example.csv")
+```
+
+
+
+
+
+
+
+
+
+
+
